@@ -23,12 +23,12 @@ type HtmlRequest struct {
 	Html string `json:"html"`
 }
 
+// cludeの受け取りに沿った構造体
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
 
-// ユーザープロフィールの構造体
 type UserProfile struct {
 	Bio        string
 	Experience string
@@ -149,15 +149,15 @@ func processQuestionsWithAI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+	// プリフライトリクエストに対する処理
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	// コンテキストを設定
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-
-	// OPTIONSリクエストに対する処理
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
 
 	// トークンからユーザーIDを取得
 	userID, err := getValueFromToken(r, "sub")
@@ -208,6 +208,7 @@ func processQuestionsWithAI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No questions found", http.StatusBadRequest)
 		return
 	}
+
 	//TOOD htmlを投げて質問に答えさせる(完了)
 	// for i:=0; i < len(questions); i++{
 	//     fmt.Println(questions[i])
