@@ -48,30 +48,39 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
+
 	var dbHost string = os.Getenv("DB_HOST")
 	var dbUser string = os.Getenv("DB_USER")
 	var dbPassword string = os.Getenv("DB_PASSWORD")
 	var dbName string = os.Getenv("DB_NAME")
 	if dbHost == "" || dbUser == "" || dbPassword == "" || dbName == "" {
-		log.Fatalf("環境変数が設定されていません:1")
+		log.Fatalf("環境変数が設定されていません: dbHost=%s, dbUser=%s, dbPassword=%s, dbName=%s", dbHost, dbUser, dbPassword, dbName)
 	}
+
+	cognitoRegion = os.Getenv("COGNITO_REGION")
+	clientId = os.Getenv("COGNITO_CLIENT_ID")
+	jwksURL = os.Getenv("TOKEN_KEY_URL")
+	if cognitoRegion == "" || clientId == "" || jwksURL == "" {
+		log.Fatalf("環境変数が設定されていません: cognitoRegion=%s, clientId=%s, jwksURL=%s", cognitoRegion, clientId, jwksURL)
+	}
+
 	region = os.Getenv("AWS_DEFAULT_REGION")
 	accessID = os.Getenv("AWS_ACCESS_KEY_ID")
 	secretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
 	sessionToken = os.Getenv("AWS_SESSION_TOKEN")
-	cognitoRegion = os.Getenv("COGNITO_REGION")
-	clientId = os.Getenv("COGNITO_CLIENT_ID")
-	jwksURL = os.Getenv("TOKEN_KEY_URL")
-	if cognitoRegion == "" || clientId == "" || jwksURL == "" || region == "" || accessID == "" || secretAccessKey == "" || sessionToken == "" {
-		log.Fatalf("環境変数が設定されていません:2")
-		fmt.Println(cognitoRegion, clientId, jwksURL, region, accessID, secretAccessKey, sessionToken)
+	if region == "" || accessID == "" || secretAccessKey == "" {
+		log.Fatalf("環境変数が設定されていません: region=%s, accessID=%s, secretAccessKey=%s", region, accessID, secretAccessKey)
 	}
+
+	// 環境変数からDB接続情報を取得
 	db, err = sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbUser, dbPassword, dbName))
 	if err != nil {
 		fmt.Println("error in db connection")
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	// 直接DB接続情報を記述
 	// db, err = sql.Open("postgres", "host=db user=postgres password=postgres dbname=testdb sslmode=disable")
 	// if err != nil {
 	// 	fmt.Println("error in db connection")
