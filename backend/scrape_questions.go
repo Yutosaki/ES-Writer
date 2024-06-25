@@ -74,7 +74,7 @@ func cleanHTMLContent(htmlContent string) string {
 	re := regexp.MustCompile(`(?s)<!-- Code injected by Five-server -->.*?<!--.*?-->`)
 	cleanedHTML := re.ReplaceAllString(htmlContent, "")
 
-	// スクリプトタグを削除する正規表現
+	// スクリプトタグを削除する正規表現(動的コンテンツのためok)
 	reScript := regexp.MustCompile(`(?s)<script.*?>.*?</script>`)
 	cleanedHTML = reScript.ReplaceAllString(cleanedHTML, "")
 

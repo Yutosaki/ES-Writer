@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	// "os"
 	"sync"
@@ -64,21 +63,17 @@ const modelId = "anthropic.claude-3-haiku-20240307-v1:0"
 func sendToAi(ctx context.Context, question string) (string, error) {
 	// AWSの認証情報を取得
 	//TODO .envの環境変数から取得するように変更(完了)
-	// region := "us-west-2"
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(
-				// os.Getenv("AWS_ACCESS_KEY_ID"),
-				// os.Getenv("AWS_SECRET_ACCESS_KEY"),
-				// os.Getenv("AWS_SESSION_TOKEN"),
 				accessID,
 				secretAccessKey,
 				sessionToken,
 			),
 		),
 	)
-	fmt.Println(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"))
+	// fmt.Println(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"))
 
 	if err != nil {
 		return "", fmt.Errorf("failed to load AWS config: %w", err)
@@ -168,6 +163,7 @@ func processQuestionsWithAI(w http.ResponseWriter, r *http.Request) {
 
 	// ユーザープロフィールを取得
 	fmt.Println("processQuestionsWithAI:" + userID)
+
 	profile, err := getUserProfile(userID)
 	if err != nil {
 		fmt.Println("error occuered!")
@@ -213,9 +209,6 @@ func processQuestionsWithAI(w http.ResponseWriter, r *http.Request) {
 	// for i:=0; i < len(questions); i++{
 	//     fmt.Println(questions[i])
 	// }
-
-	// // 経歴情報を定義
-	// bio := "大学一年生の頃に海外で英語を一年学び、その後、大学でプログラミングの勉強をし、今は個人開発などをしている。webアプリケーションも作成した。(https://github.com/yamamoto99/es-writer)将来的にはエンジニアとしてさまざまな開発に携わりたい。普段は42Tokyoに通っており、CやGoを学んでいる。"
 
 	// 並列処理のためのWaitGroupを作成
 	var wg sync.WaitGroup
