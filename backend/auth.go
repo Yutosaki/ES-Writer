@@ -233,16 +233,16 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	createdAt := time.Now()
 
 	// サインアップ成功後にユーザー情報をデータベースに挿入する型を準備
-	stmt, err := db.Prepare("INSERT INTO users (id, username, email, created_at) VALUES ($1, $2, $3, $4)")
+	statement, err := db.Prepare("INSERT INTO users (id, username, email, created_at) VALUES ($1, $2, $3, $4)")
 	if err != nil {
 		log.Println("Database prepare statement error:", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
-	defer stmt.Close()
+	defer statement.Close()
 
 	// ユーザー情報をデータベースに挿入
-	_, err = stmt.Exec(userID, SignUp.Username, SignUp.Email, createdAt)
+	_, err = statement.Exec(userID, SignUp.Username, SignUp.Email, createdAt)
 	if err != nil {
 		http.Error(w, "Database insert failed", http.StatusInternalServerError)
 		log.Println("Database insert error:", err)

@@ -34,15 +34,16 @@ func saveProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt, err := db.Prepare("UPDATE users SET bio=$1, experience=$2, projects=$3 WHERE id=$4")
+	// 最初もUPDATEで入力する
+	statement, err := db.Prepare("UPDATE users SET bio=$1, experience=$2, projects=$3 WHERE id=$4")
 	if err != nil {
 		log.Println("Database prepare statement error:", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
-	defer stmt.Close()
+	defer statement.Close()
 
-	_, err = stmt.Exec(req.Bio, req.Experience, req.Projects, userID)
+	_, err = statement.Exec(req.Bio, req.Experience, req.Projects, userID)
 	if err != nil {
 		log.Println("Database update error:", err)
 		http.Error(w, "Database update failed", http.StatusInternalServerError)
