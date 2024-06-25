@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 
 	// "os"
 	"sync"
@@ -220,20 +221,46 @@ func processQuestionsWithAI(w http.ResponseWriter, r *http.Request) {
 
 	answers := make([]Answer, len(questions))
 
-	// 質問ごとにゴルーチンを作成して非同期処理を実行
+	// 使用可能なCPU数を取得
+	numCPU := runtime.NumCPU()
+
+	// セマフォを使用してゴルーチンのの同時実行数を制限
+	semaphore := make(chan struct{}, numCPU)
+
+	// 質問を並列に行う
 	for i, question := range questions {
 		wg.Add(1)
 		go func(i int, q string) {
 			defer wg.Done()
+
+			// セマフォを取得
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+
 			prompt := generatePromptWithBio(profile, q)
 			answer, err := sendToAi(ctx, prompt)
 			if err != nil {
-				log.Printf("Error sending to AI: %v", err)
+				log.Printf("Error sending to AI: %v", q)
 				return
 			}
 			answers[i] = Answer{Question: q, Answer: answer}
 		}(i, question)
 	}
+
+	// 質問ごとにゴルーチンを作成して非同期処理を実行
+	// for i, question := range questions {
+	// 	wg.Add(1)
+	// 	go func(i int, q string) {
+	// 		defer wg.Done()
+	// 		prompt := generatePromptWithBio(profile, q)
+	// 		answer, err := sendToAi(ctx, prompt)
+	// 		if err != nil {
+	// 			log.Printf("Error sending to AI: %v", err)
+	// 			return
+	// 		}
+	// 		answers[i] = Answer{Question: q, Answer: answer}
+	// 	}(i, question)
+	// }
 
 	// 全てのゴルーチンが終了するのを待機
 	wg.Wait()
